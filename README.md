@@ -19,6 +19,9 @@ library(sjstats)
 Load up the GPRA data and get the measures that Jon is interested in, the intake, 6-month, and housing variables.  
 
 Getting rid of people who were housed at the start the program
+
+Need to change living where, with 4 being housed for both pre and post 
+Need to change employment with 1 being employed and 2 not employed
 ```{r}
 setwd("S:/Indiana Research & Evaluation/Indiana Connections/Data/GPRA")
 GPRAAll = read.csv("ConnGPRA.csv", header = TRUE) 
@@ -35,9 +38,15 @@ head(GPRAAll)
 dim(GPRAAll)
 
 # Getting rid of people who were originally housed
-GPRAAll = subset(GPRAAll, LivingWhere.x !=4)
-dim(GPRAAll)
-
+GPRAAll = subset(GPRAAll,LivingWhere.x !=4)
+GPRAAll$LivingWhere.y = ifelse(GPRAAll$LivingWhere.y == 4, 1,0)
+GPRAAll$LivingWhere.x = ifelse(GPRAAll$LivingWhere.x == 4, 1,0)
+GPRAAll$Employment.x = ifelse(GPRAAll$Employment.x == 1, 1,0)
+GPRAAll$Employment.y = ifelse(GPRAAll$Employment.y == 1, 1,0)
+GPRAAll = subset(GPRAAll, Gender.x <= 2)
+GPRAAll = subset(GPRAAll, Gender.y <= 2)
+GPRAAll$Gender.x = ifelse(GPRAAll$Gender.x == 1, 1,0)
+GPRAAll$Gender.y = ifelse(GPRAAll$Gender.y == 1, 1,0)
 ```
 These are the variables in the GPRA that have the least missing data
 Add interview date for post and then create a time in intervention
@@ -71,125 +80,131 @@ GAD7All = merge(GAD7Base, GAD76month, by = "ParticipantID", all = TRUE)
 Load PHQ9 and GAD7 into one data set with client ID.  Then put them together with the GPRA data and see how much is missing.
 ```{r}
 PHQ9Connections = data.frame(ClientID = PHQ9All$ParticipantID,PHQ9Base= PHQ9All$PHQ9Total.x, PHQ9Month6= PHQ9All$PHQ9Total.y)
-
-
 GAD7Connections = data.frame(ClientID = GAD7All$ParticipantID, GAD7Base = GAD7All$GAD7Total.x, GAD7Month6 = GAD7All$GAD7Total.y)
 PHQ9_GAD7 = merge(PHQ9Connections, GAD7Connections, by = "ClientID", all = TRUE)
 head(PHQ9_GAD7)
+
 ```
 
 Combine PHQ9 and GAD7, with interview date so we can exclude intake where no reassessment is due and housing
 ```{r}
 PHQ9_GAD7 = merge(ConnPaper, PHQ9_GAD7, by = "ClientID", all = TRUE)
 dim(PHQ9_GAD7)
-PHQ9_GAD7 = data.frame(ClientID = PHQ9_GAD7$ClientID, InterviewDate.x = PHQ9_GAD7$InterviewDate.x,InterviewDate.y = PHQ9_GAD7$InterviewDate.y, LivingWhere.y= PHQ9_GAD7$LivingWhere.y, PHQ9_GAD7[,23:33])
+PHQ9_GAD7 = data.frame(ClientID = PHQ9_GAD7$ClientID, InterviewDate.x = PHQ9_GAD7$InterviewDate.x,InterviewDate.y = PHQ9_GAD7$InterviewDate.y,LivingWhere.x= PHQ9_GAD7$LivingWhere.x, LivingWhere.y= PHQ9_GAD7$LivingWhere.y, InteractFamilyFriends.x = PHQ9_GAD7$InteractFamilyFriends.x, InteractFamilyFriends.y = PHQ9_GAD7$InteractFamilyFriends.y, Employment.x = PHQ9_GAD7$Employment.x, Employment.y = PHQ9_GAD7$Employment.y, PHQ9_GAD7[,23:33])
 dim(PHQ9_GAD7)
 PHQ9_GAD7 = subset(PHQ9_GAD7, InterviewDate.x < "2018-02-01")
 dim(PHQ9_GAD7)
+
 
 PHQ9_GAD7Complete = na.omit(PHQ9_GAD7)
 dim(PHQ9_GAD7Complete)
 1-(dim(PHQ9_GAD7Complete)[1]/(dim(PHQ9_GAD7)[1]))
 ```
 Data Cleaning: Changing housing to yes or no for both data sets PHQ9_GAD7 and GPRA.  Only care about the 6 month reassessment, because we want to know if they housed eventually
+
+Need to change living where for both 
 ```{r}
-describe.factor(PHQ9_GAD7$LivingWhere.y)
-PHQ9_GAD7$LivingWhere.y = ifelse(PHQ9_GAD7$LivingWhere.y == 4, 1, 0)
-ConnGPRA$LivingWhere.y = ifelse(ConnGPRA$LivingWhere.y == 4,1,0)
+describe.factor(PHQ9_GAD7$LivingWhere.x)
 describe.factor(PHQ9_GAD7$LivingWhere.y)
 describe.factor(ConnGPRA$LivingWhere.y)
+describe.factor(ConnGPRA$Employment.y)
 ```
-
-
 Put everything into long format for GPRA and PHQ9 and GAD7
 ```{r}
-ConnGPRALong = reshape(ConnGPRA, varying = list(c("Depression.x", "Depression.y"), c("Anxiety.x", "Anxiety.y"), c("BrainFunction.x", "BrainFunction.y"), c("ViolentBehavior.x", "ViolentBehavior.y"), c("PhysicallyHurt.x", "PhysicallyHurt.y"), c("Employment.x", "Employment.y"), c("ArrestedDays.x", "ArrestedDays.y"), c("HealthStatus.x", "HealthStatus.y"), c("DAUseIllegDrugsDays.x", "DAUseIllegDrugsDays.y"), c("InterviewDate.x", "InterviewDate.y")), times = c(0,1), direction = "long")
+
+ConnGPRALong = reshape(ConnGPRA, varying = list(c("Depression.x", "Depression.y"), c("Anxiety.x", "Anxiety.y"), c("BrainFunction.x", "BrainFunction.y"), c("ViolentBehavior.x", "ViolentBehavior.y"), c("PhysicallyHurt.x", "PhysicallyHurt.y"), c("Employment.x", "Employment.y"), c("ArrestedDays.x", "ArrestedDays.y"), c("HealthStatus.x", "HealthStatus.y"), c("DAUseIllegDrugsDays.x", "DAUseIllegDrugsDays.y"), c("InterviewDate.x", "InterviewDate.y"), c("LivingWhere.x", "LivingWhere.y"), c("InteractFamilyFriends.x", "InteractFamilyFriends.y")), times = c(0,1), direction = "long")
 head(ConnGPRALong)
 
-PHQ9_GAD7Long = reshape(PHQ9_GAD7, varying = list(c("PHQ9Base", "PHQ9Month6"), c("GAD7Base", "GAD7Month6"), c("DAUseIllegDrugsDays.x", "DAUseIllegDrugsDays.y"), c("InterviewDate.x", "InterviewDate.y")), times = c(0,1), direction = "long")
+
+
+PHQ9_GAD7Long = reshape(PHQ9_GAD7, varying = list(c("PHQ9Base", "PHQ9Month6"), c("GAD7Base", "GAD7Month6"), c("DAUseIllegDrugsDays.x", "DAUseIllegDrugsDays.y"), c("InterviewDate.x", "InterviewDate.y"), c("LivingWhere.x", "LivingWhere.y"), c("InteractFamilyFriends.x", "InteractFamilyFriends.y")), times = c(0,1), direction = "long")
 
 PHQ9_GAD7AnalysisLong = na.omit(PHQ9_GAD7Long)
 write.csv(PHQ9_GAD7AnalysisLong, "PHQ9_GAD7AnalysisLong.csv", row.names = FALSE)
 PHQ9_GAD7AnalysisLong = read.csv("PHQ9_GAD7AnalysisLong.csv", header = TRUE)
 
-ConnGPRALongAnalysis$Employment.x = ifelse(ConnGPRALongAnalysis$Employment.x == 1, 1,0)
+
 ConnGPRALongAnalysis = na.omit(ConnGPRALong)
 dim(ConnGPRALongAnalysis)
 write.csv(ConnGPRALong, "ConnGPRALong.csv", row.names = FALSE)
 ConnGPRALong = read.csv("ConnGPRALong.csv", header = TRUE)
 
+ConnGPRALongMissing = ConnGPRALong
+ConnGPRALongMissing$InterviewDate.x = NULL
+
+summary(ConnGPRALongMissing)
 ```
-Data Analysis: Here look at outcomes over time only no interaction effect
-These are all random intercepts only
+Get rid of date variables those will mess up the imputer
+Use ConnGPRALong, because that 
 ```{r}
+head(ConnGPRALongMissing)
+m = 10
+ConnGPRALongMissingOut = amelia(m = 10, ConnGPRALongMissing, noms = c("Employment.x", "InteractFamilyFriends.x", "LivingWhere.x"), ords = c("HealthStatus.x", "Depression.x", "Anxiety.x", "ViolentBehavior.x", "PhysicallyHurt.x","ArrestedDays.x", "DAUseIllegDrugsDays.x", "IncomeWages.x"), ts = "time")
 
-modelTimePHQ9 = lme(PHQ9Base ~ time, random = ~1 | ClientID, data = PHQ9_GAD7AnalysisLong)
-summary(modelPHQ9)
+ConnGPRALongMissingOut$imputations$imp1$Depression.x
 
-modelTimeGAD7 = lme(GAD7Base ~ time, random = ~1 | ClientID, data = PHQ9_GAD7AnalysisLong)
-summary(modelPHQ9)
-
-
-
-### Multi not working so try linear regression
-
-## Well not time interaction is significant so what is going on now?
-modelDepress = glmer(Depression.x ~ time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelDepress)
-
-
-
-modelTimeDepress = glmer(Depression.x ~ time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeDepress)
-
-modelTimeAnxeity = glmer(Anxiety.x ~ time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeAnxeity)
-
-modelTimeArrested  = glmer(ArrestedDays.x ~ time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeArrested)
-
-modelTimeHealthStatus  = lme(HealthStatus.x ~ time, random =~ 1 | ClientID, data  = ConnGPRALongAnalysis)
-summary(modelTimeHealthStatus)
-
-
-modelTimeEmployment  = glmer(Employment.x ~ time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
-summary(modelTimeEmployment)
-
-modelTimeDAUseIllegDrugsDays  = glmer(DAUseIllegDrugsDays.x ~ time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeDAUseIllegDrugsDays)
-
-
-##### Not enough data for random slopes ####
-modelDepressSlope = glmer(Depression.x ~ time + (time | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelDepressSlope)
-
-# Not enough data to run these models
-describe.factor(ConnGPRALongAnalysis$IncomeWages.x)
-modelWages = glmer(IncomeWages.x~ LivingWhere.y*time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelWages)
-
+compare.density(ConnGPRALongMissingOut, var = "HealthStatus.x")
 ```
-Data Analysis: Try multiple outcomes by housing
+Getting missing data ready 
 ```{r}
+ConnGPRALongMissing = lapply(1:m, function(x){ConnGPRALongMissingOut$imputations[[x]]})
+head(ConnGPRALongMissing)
 
-modelTimeHouseDepress= glmer(Depression.x ~ LivingWhere.y*time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeHouseDepress)
+ConnGPRALongMissing = na.omit(ConnGPRALongMissing)
+head(ConnGPRALongMissing[[1]])
+dim(ConnGPRALongMissing[[1]])
+```
+Now getting descriptives
+```{r}
+ConnGPRALongMissingDescribe = lapply(1:m, function(x){describe(ConnGPRALongMissing[[x]])})
+ConnGPRALongMissingDescribe
+```
 
 
-modelTimeHouseAnxeity = glmer(Anxiety.x ~ LivingWhere.y*time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeHouseAnxeity)
+Data Analysis: Factors associated with housing
+```{r}
+outputTest = glmer(LivingWhere.x ~ Employment.x+ (1 | ClientID), data  = ConnGPRALongMissing[[5]], family = "binomial")
+summary(outputTest)
 
-modelTimeHouseArrested  = glmer(ArrestedDays.x ~ LivingWhere.y*time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeHouseArrested)
+head(ConnGPRALongMissing)
 
-modelTimeHouseHealthStatus  = lme(HealthStatus.x ~ LivingWhere.y*time, random =~ 1 | ClientID, data  = ConnGPRALongAnalysis)
-summary(modelTimeHouseHealthStatus)
 
-modelTimeHouseEmployment  = glmer(Employment.x ~ LivingWhere.y*time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
-summary(modelTimeHouseEmployment)
+output = list()
+coef_output =  NULL
+se_output = NULL
 
-modelTimeHouseDAUseIllegDrugsDays  = glmer(DAUseIllegDrugsDays.x ~ LivingWhere.y*time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "poisson")
-summary(modelTimeHouseDAUseIllegDrugsDays)
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ (1 | ClientID), data  = ConnGPRALongMissing[[i]], family = "binomial")
+
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = 710)),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+
 ```
 Data cleaning for logisitic analysis
 Need to change education at some point
@@ -201,12 +216,6 @@ describe.factor(ConnGPRALongAnalysis$EducationYears.x)
 
 ConnGPRALongAnalysis$EducationYears.x = ifelse(ConnGPRALongAnalysis$EducationYears.x <= 12, 1, 0)
 describe.factor(ConnGPRALongAnalysis$EducationYears.x)
-describe.factor(ConnGPRALongAnalysis$Gender.x) 
-ConnGPRALongAnalysis$Gender.x = ifelse(ConnGPRALongAnalysis$Gender.x == 1, 0, ifelse(ConnGPRALongAnalysis$Gender.x == 2, 1, ConnGPRALongAnalysis$Gender.x))
-describe.factor(ConnGPRALongAnalysis$Gender.xTest)
-
-ConnGPRALongAnalysis = subset(ConnGPRALongAnalysis, Gender.x != 4)
-describe.factor(ConnGPRALongAnalysisTest$Gender.x)
 ```
 
 Data Analysis: Now try logisitic regression for factors related to those in housing and not in housing
@@ -219,126 +228,51 @@ ConnPaper = data.frame(ClientID = GPRAAll$ClientID, InterviewDate.x = GPRAAll$In
 ```{r}
 
 ## Too many variables
-modelLogit  = glmer(LivingWhere.y ~  time + Employment.x +HealthStatus.x + Gender.x + Age.x + EducationYears.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
-summary(modelTimeHouseEmployment)
+modelLogit  = glmer(LivingWhere.x ~  time + Employment.x +HealthStatus.x + Gender.x + Age.x + EducationYears.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+summary(modelLogit)
 
 ### Try just time and move up from there, time not significant 
-modelLogit1  = glmer(LivingWhere.y ~  time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit1  = glmer(LivingWhere.x ~  time + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit1)
 
-## Try employment employment not significant
-modelLogit2  = glmer(LivingWhere.y ~  Employment.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+## Try employment employment is significnat
+modelLogit2  = glmer(LivingWhere.x ~  Employment.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit2)
 
 ## Try HealthStatus.x, not significant
-modelLogit3  = glmer(LivingWhere.y ~  HealthStatus.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit3  = glmer(LivingWhere.x ~  HealthStatus.x + Employment.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit3)
 
 ## ArrestedDays.x
-modelLogit4  = glmer(LivingWhere.y ~  ArrestedDays.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit4  = glmer(LivingWhere.x ~  ArrestedDays.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit4)
 
 ## Try EducationYears.x, not significant
-modelLogit5 = glmer(LivingWhere.y ~  EducationYears.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit5 = glmer(LivingWhere.x ~  EducationYears.x + Employment.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit5)
 
 ### Try Depression.x, not significant 
-modelLogit6 = glmer(LivingWhere.y ~  Depression.x  + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
-summary(modelLogit6)
-
-### Try Depression.x, not significant 
-modelLogit6 = glmer(LivingWhere.y ~  Depression.x  + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit6 = glmer(LivingWhere.x ~  Depression.x  + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit6)
 
 ### Try Anxiety.x, not significant
-modelLogit7 = glmer(LivingWhere.y ~  Anxiety.x  + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit7 = glmer(LivingWhere.x ~  Anxiety.x  + Employment.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit7)
 
 ### Try  Gender.x, not significant
-modelLogit8 = glmer(LivingWhere.y ~ Gender.x   + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit8 = glmer(LivingWhere.x ~ Gender.x   + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit8)
 
 ### DAUseIllegDrugsDays.x, not significant
-modelLogit9 = glmer(LivingWhere.y ~  DAUseIllegDrugsDays.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
+modelLogit9 = glmer(LivingWhere.x ~  DAUseIllegDrugsDays.x + Employment.x + (1 | ClientID), data  = ConnGPRALongAnalysis, family = "binomial")
 summary(modelLogit9)
 
 ### Try PHQ9, not significant 
-modelLogit10 = glmer(LivingWhere.y ~  PHQ9Base + (1 | ClientID), data  = PHQ9_GAD7AnalysisLong, family = "binomial")
+modelLogit10 = glmer(LivingWhere.x ~  PHQ9Base + (1 | ClientID), data  = PHQ9_GAD7AnalysisLong, family = "binomial")
 summary(modelLogit10)
 describe.factor(PHQ9_GAD7AnalysisLong$LivingWhere.y)
 
 ### Try GAD7Base
-modelLogit11 = glmer(LivingWhere.y ~  GAD7Base + (1 | ClientID), data  = PHQ9_GAD7AnalysisLong, family = "binomial")
+modelLogit11 = glmer(LivingWhere.x ~  GAD7Base + (1 | ClientID), data  = PHQ9_GAD7AnalysisLong, family = "binomial")
 summary(modelLogit11)
 ```
-For logisitic model, could just see if baseline factor are related to being housed.  Maybe it won't make a difference?
-```{r}
-
-## Try employment employment not significant
-modelLogit2  = glm(LivingWhere.y ~  Employment.x, data  = ConnGPRAAnalysis, family = "binomial")
-summary(modelLogit2)
-
-## Try HealthStatus.x, not significant
-modelLogit3  = glm(LivingWhere.y ~  HealthStatus.x, data  =ConnGPRAAnalysis , family = "binomial")
-summary(modelLogit3)
-
-## ArrestedDays.x
-modelLogit4  = glm(LivingWhere.y ~  ArrestedDays.x, data  = ConnGPRAAnalysis, family = "binomial")
-summary(modelLogit4)
-
-## Try EducationYears.x, not significant
-modelLogit5 = glm(LivingWhere.y ~  EducationYears.x, data  = ConnGPRAAnalysis, family = "binomial")
-summary(modelLogit5)
-
-### Try Depression.x, not significant 
-modelLogit6 = glm(LivingWhere.y ~  Depression.x, data  = ConnGPRAAnalysis, family = "binomial")
-summary(modelLogit6)
-
-### Try Depression.x, not significant 
-modelLogit6 = glm(LivingWhere.y ~  Depression.x, data  = ConnGPRAAnalysis, family = "binomial")
-summary(modelLogit6)
-
-### Try Anxiety.x, not significant
-modelLogit7 = glm(LivingWhere.y ~  Anxiety.x, data  = ConnGPRAAnalysis, family = "binomial")
-summary(modelLogit7)
-
-### Try  Gender.x, not significant
-modelLogit8 = glm(LivingWhere.y ~ Gender.x, data  = ConnGPRALongAnalysis, family = "binomial")
-summary(modelLogit8)
-
-### DAUseIllegDrugsDays.x, not significant
-modelLogit9 = glm(LivingWhere.y ~  DAUseIllegDrugsDays.x, data  = ConnGPRAAnalysis, family = "binomial")
-summary(modelLogit9)
-
-### Get rid of missing values for PHQ9_GAD7
-PHQ9_GAD7Analysis = na.omit(PHQ9_GAD7)
-write.csv(PHQ9_GAD7Analysis, "PHQ9_GAD7Analysis.csv", row.names = FALSE)
-PHQ9_GAD7Analysis = read.csv("PHQ9_GAD7Analysis.csv", header = TRUE)
-### Try PHQ9, not significant 
-modelLogit10 = glm(LivingWhere.y ~  PHQ9Base, data  = PHQ9_GAD7Analysis, family = "binomial")
-summary(modelLogit10)
-
-
-### Try GAD7Base
-modelLogit11 = glm(LivingWhere.y ~  GAD7Base, data  = PHQ9_GAD7Analysis, family = "binomial")
-summary(modelLogit11)
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
