@@ -89,7 +89,6 @@ PHQ9_GAD7 = subset(PHQ9_GAD7, InterviewDate.x < "2018-02-01")
 dim(PHQ9_GAD7)
 head(PHQ9_GAD7)
 sum(is.na(PHQ9_GAD7$LivingWhere.x))
-
 ```
 ### For descriptives for paper 
 First get without missing data 
@@ -179,8 +178,6 @@ PHQ9_GAD7LongCenterOut = amelia(m = 10, PHQ9_GAD7LongCenter, noms = c("Employmen
 summary(PHQ9_GAD7LongCenterOut)
 
 compare.density(PHQ9_GAD7LongCenterOut, var = "HealthStatus.x")
-
-
 ```
 Getting missing data ready 
 ```{r}
@@ -244,6 +241,913 @@ results = meldAllT_stat(coef_output, se_output); results
 results$expCoefs1 = exp(results$coefs1)
 round(results,3) 
 ```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Employment by age
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x*Age.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Employment by education
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x*EducationYears.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Employment by depression
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x*Depression.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Employment by health status
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x*HealthStatus.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Employment by drug use
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x*DAUseIllegDrugsDays.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Depression by age
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x*Age.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Depression by education
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x*EducationYears.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Depression by health status
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x*HealthStatus.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Depression by drug use
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x*DAUseIllegDrugsDays.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Health status by age
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x + HealthStatus.x*Age.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Health status by education
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x + HealthStatus.x*EducationYears.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Health status by employment
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x + HealthStatus.x*Employment.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Drug Use by age
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x*DAUseIllegDrugsDays.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Drug Use by education
+
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x*EducationYears.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Employment by gender
+
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x*Gender.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Depression by gender
+
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x*Gender.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Health status by gender
+
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x + HealthStatus.x*Gender.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+Now try the different interaction effects
+####Final
+Data Analysis: Factors with housing: Employment + Depression.x
+Drug use by gender
+
+```{r}
+head(PHQ9_GAD7LongCenter[[1]])
+
+#test = glmer(LivingWhere.x ~ Employment.x+ Depression.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[1]], family = "binomial")
+
+output = list()
+coef_output =  NULL
+se_output = NULL
+df= NULL
+rSquared = NULL
+
+for(i in 1:m){
+  output[[i]] = glmer(LivingWhere.x ~ Employment.x+ Depression.x + HealthStatus.x + Gender.x + EducationYears.x + Age.x + DAUseIllegDrugsDays.x*Gender.x + (1 | ClientID), data  = PHQ9_GAD7LongCenter[[i]], family = "binomial")
+  rSquared[[i]] = r.squaredGLMM(output[[i]])
+  output[[i]] = summary(output[[i]])
+  coef_output[[i]] = output[[i]]$coefficients[,1]
+  se_output[[i]] = output[[i]]$coefficients[,2]
+  df[[i]] = output[[i]]$AICtab[5]
+}
+coef_output = data.frame(coef_output)
+coef_output
+quickTrans = function(x){
+  x = data.frame(x)
+  x = t(x)
+  x = data.frame(x)
+}
+
+coef_output = quickTrans(coef_output)
+coef_output
+se_output = quickTrans(se_output)
+
+#coefsAll = mi.meld(q = coef_output, se = se_output)
+
+meldAllT_stat = function(x,y){
+  coefsAll = mi.meld(q = x, se = y)
+  coefs1 = t(data.frame(coefsAll$q.mi))
+  ses1 = t(data.frame(coefsAll$se.mi))
+  t_stat = coefs1/ses1
+  options(scipen=999)
+  p = round((2*pt(-abs(t_stat), df = df[1])),3)
+  return(data.frame(coefs1, ses1, t_stat, p))
+}
+results = meldAllT_stat(coef_output, se_output); results
+results$expCoefs1 = exp(results$coefs1)
+round(results,3) 
+```
+
+
 Run diagnostics on one data set then maybe try building for all of them
 First develop an empty model
 Run the code over all the models and just get the models then run the anova over all the models then get the diagnostics 
