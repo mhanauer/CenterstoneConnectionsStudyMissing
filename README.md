@@ -147,6 +147,41 @@ mean.sd.out= mi.meld(mean.out, sd.out)
 mean.sd.out
 
 ```
+Now descriptives for 6-month
+```{r}
+datAnalysisAll = lapply(1:m, function(x){PHQ9_GAD7LongMissingDesOut$imputations[[x]]})
+
+
+datAnalysisAllDes = lapply(1:m, function(x){subset(datAnalysisAll[[x]], time == 1)})
+
+mean.out = NULL
+for(i in 1:m) {
+  mean.out[[i]] = apply(datAnalysisAllDes[[i]], 2, mean)
+  mean.out = data.frame(mean.out)
+}
+mean.out
+
+descFun = function(x){
+  x = data.frame(t(x))
+}
+mean.out = descFun(mean.out)
+mean.out
+
+# now get sds
+sd.out = NULL
+for(i in 1:m) {
+  sd.out[[i]] = apply(datAnalysisAllDes[[i]], 2, sd)
+  sd.out = data.frame(sd.out)
+}
+sd.out = descFun(sd.out)
+sd.out
+mean.sd.out= mi.meld(mean.out, sd.out)
+mean.sd.out
+
+```
+
+
+
 Center everything besides categorical, date, and count (centering count variables could result in negative and not whole numbers).  So create two data sets one for the categorical outcomes and one for the continuous ones that will be centered.  Then recombine them into one data set overwriting the old one.
 ```{r}
 head(PHQ9_GAD7Long)
