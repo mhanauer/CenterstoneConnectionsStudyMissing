@@ -34,7 +34,7 @@ Because when employment equals 1 that means that they are employed at all, I am 
 I am subetting the gender variable where gender is greater than 2 is excluded, because there are not enough non male or female gender identities to run any statistics on
 Then for gender I am changing them to 1 for male and 0 for female
 ```{r}
-setwd("S:/Indiana Research & Evaluation/Indiana Connections/Data/GPRA")
+setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/ConnectionsPaperData")
 GPRAAll = read.csv("ConnGPRA.csv", header = TRUE) 
 # subet the data based on 1's for baseline and 2's for six-month.  Then write as CSV's, then merge together.
 GPRAConBase = subset(GPRAAll, InterviewType ==1)
